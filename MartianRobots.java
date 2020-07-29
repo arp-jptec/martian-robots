@@ -4,10 +4,12 @@ import java.util.ArrayList;
 
 public class MartianRobots {
 
-    private int[][] grid;
+    private static int[][] grid;
     private List<String> outputList;
 
     public MartianRobots(int upperX, int upperY){
+        if (upperX < 0 || upperX > 50 || upperY < 0 || upperY > 50)
+            throw new IllegalArgumentException("Invalid grid");
         grid = new int[++upperX][++upperY];
         outputList = new ArrayList<>();
     }
@@ -63,23 +65,30 @@ public class MartianRobots {
         RobotPosition robotPosition = null;
         Scanner scanner = new Scanner(System.in);
         String[] coordinates = scanner.nextLine().split(" ");
+        if(coordinates.length != 2)
+            throw  new IllegalArgumentException("First line should be upper right coordinates of grid separated with whitespace");
         MartianRobots martianRobots = new MartianRobots(Integer.parseInt(coordinates[0]), Integer.parseInt(coordinates[1]));
 
         while (scanner.hasNextLine()){
             String line = scanner.nextLine();
             if(line.trim().length() == 0) {
-                martianRobots.printOutput();
-                System.exit(0);
+                if(lineCount % 2 == 1){
+                    martianRobots.printOutput();
+                    System.exit(0);
+                }
+            }else {
+                if (lineCount % 2 == 1) {
+                    String[] positionData = line.split(" ");
+                    if (positionData.length != 3 || positionData[2].length() != 1)
+                        throw new IllegalArgumentException("Invalid position");
+                    robotPosition = new RobotPosition(Integer.parseInt(positionData[0]), Integer.parseInt(positionData[1]), Direction.getDirectionByLabel(positionData[2].charAt(0)));
+                } else {
+                    if (line.length() >= 100)
+                        throw new IllegalArgumentException("Invalid instruction length");
+                    martianRobots.instruct(robotPosition, line);
+                }
+                lineCount++;
             }
-            if(lineCount % 2 == 1) {
-                String[] positionData = line.split(" ");
-                robotPosition = new RobotPosition(Integer.parseInt(positionData[0]), Integer.parseInt(positionData[1]),Direction.getDirectionByLabel(positionData[2].charAt(0)));
-            }
-            else {
-                martianRobots.instruct(robotPosition,line);
-            }
-            lineCount++;
-
         }
     }
 
@@ -90,6 +99,12 @@ public class MartianRobots {
         Direction direction;
 
         RobotPosition(int x, int y, Direction direction){
+            try {
+                int square = grid[x][y];
+            }catch (ArrayIndexOutOfBoundsException aie){
+                throw new IllegalArgumentException("Invalid position");
+            }
+
             this.x = x;
             this.y = y;
             this.direction = direction;
@@ -135,7 +150,4 @@ public class MartianRobots {
             }
         }
     }
-
-
-
 }
